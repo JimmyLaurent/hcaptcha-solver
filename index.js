@@ -79,7 +79,7 @@ async function solveCaptcha(url, options = {}) {
         return result;
       }
     } catch (e) {
-      if (e.response && e.response.status === 429) {
+      if (e.statusCode === 429) {
         // reached rate limit, wait 30 sec
         await delay(30000);
       } else {
