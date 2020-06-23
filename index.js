@@ -1,5 +1,6 @@
 const request = require('request-promise-native');
 const Url = require('url');
+const vm = require('vm');
 const {
   randomFromRange,
   randomTrueFalse,
@@ -19,18 +20,52 @@ function getMouseMovements(timestamp) {
   return mouseMovements;
 }
 
+async function hsl(req) {
+  const hsl = await request.get('https://assets.hcaptcha.com/c/7f492a3/hsl.js');
+  return new Promise((resolve, reject) => {
+    const code = `
+    var self = {};
+    function atob(a) {
+      return new Buffer(a, 'base64').toString('binary');
+    }
+  
+    ${hsl}
+  
+    hsl('${req}').then(resolve).catch(reject)
+    `;
+    vm.runInNewContext(code, {
+      Buffer,
+      resolve,
+      reject,
+    });
+  });
+}
+
+
 async function tryToSolve(sitekey, host) {
   const userAgent = getRandomUserAgent();
   const headers = {
     'User-Agent': userAgent
   };
-
+  
   let response = await request({
+    method: 'get',
+    headers,
+    json: true,
+    url: `https://hcaptcha.com/checksiteconfig?host=caspers.app&sitekey=${sitekey}&sc=1&swa=0`
+  });
+
+  response = await request({
     method: 'post',
     headers,
     json: true,
     url: 'https://hcaptcha.com/getcaptcha',
-    form: { sitekey, host }
+    form: {
+      sitekey,
+      host,
+      n: await hsl(response.c.req),
+      c: JSON.stringify(response.c)
+    }
   });
 
   if (response.generated_pass_UUID) {
@@ -50,7 +85,7 @@ async function tryToSolve(sitekey, host) {
     motionData: {
       st: timestamp,
       dct: timestamp,
-      mm: getMouseMovements()
+      mm: getMouseMovements(timestamp)
     }
   };
 
@@ -67,7 +102,7 @@ async function tryToSolve(sitekey, host) {
 }
 
 async function solveCaptcha(url, options = {}) {
-  const { gentleMode, timeoutInMs } = options;
+  const { gentleMode, timeoutInMs = 12000000 } = options;
   const { hostname } = Url.parse(url);
   const siteKey = uuid();
   const startingTime = Date.now();
