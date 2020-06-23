@@ -52,7 +52,7 @@ async function tryToSolve(sitekey, host) {
     method: 'get',
     headers,
     json: true,
-    url: `https://hcaptcha.com/checksiteconfig?host=caspers.app&sitekey=${sitekey}&sc=1&swa=0`
+    url: `https://hcaptcha.com/checksiteconfig?host=${host}&sitekey=${sitekey}&sc=1&swa=0`
   });
 
   response = await request({
