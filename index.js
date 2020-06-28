@@ -21,7 +21,7 @@ function getMouseMovements(timestamp) {
 }
 
 async function hsl(req) {
-  const hsl = await request.get('https://assets.hcaptcha.com/c/7f492a3/hsl.js');
+  const hsl = await request.get('https://assets.hcaptcha.com/c/500c658/hsl.js');
   return new Promise((resolve, reject) => {
     const code = `
     var self = {};
@@ -55,6 +55,7 @@ async function tryToSolve(sitekey, host) {
     url: `https://hcaptcha.com/checksiteconfig?host=${host}&sitekey=${sitekey}&sc=1&swa=0`
   });
 
+  let timestamp = Date.now() + randomFromRange(30, 120);
   response = await request({
     method: 'post',
     headers,
@@ -64,7 +65,12 @@ async function tryToSolve(sitekey, host) {
       sitekey,
       host,
       n: await hsl(response.c.req),
-      c: JSON.stringify(response.c)
+      c: JSON.stringify(response.c),
+      motionData: {
+        st: timestamp,
+        dct: timestamp,
+        mm: getMouseMovements(timestamp)
+      }
     }
   });
 
@@ -75,7 +81,7 @@ async function tryToSolve(sitekey, host) {
   const key = response.key;
   const tasks = response.tasklist;
   const job = response.request_type;
-  const timestamp = Date.now() + randomFromRange(30, 120);
+  timestamp = Date.now() + randomFromRange(30, 120);
   const answers = tasks.reduce((accum, t) => ({ ...accum, [t.task_key]: randomTrueFalse() }), {});
   const captchaResponse = {
     answers,
