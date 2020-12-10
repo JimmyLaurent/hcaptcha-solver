@@ -21,12 +21,12 @@ function getMouseMovements(timestamp) {
 }
 
 async function hsl(req) {
-  const hsl = await request.get('https://assets.hcaptcha.com/c/500c658/hsl.js');
+  const hsl = await request.get('https://assets.hcaptcha.com/c/b147199/hsl.js');
   return new Promise((resolve, reject) => {
     const code = `
     var self = {};
     function atob(a) {
-      return new Buffer(a, 'base64').toString('binary');
+      return Buffer.from(a, 'base64').toString('binary');
     }
   
     ${hsl}
