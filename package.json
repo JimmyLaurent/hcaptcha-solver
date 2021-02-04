@@ -1,11 +1,12 @@
 {
-  "name": "hcaptcha-solver",
-  "version": "1.0.2",
+  "name": "hcaptcha-solver-plus",
+  "version": "1.0.0",
   "description": "A library to solve hCaptcha challenges",
-  "author": "Jimmy Laurent",
+  "author": "hitthemoney",
+  "original-author": "Jimmy Laurent",
   "repository": {
     "type": "git",
-    "url": "git://github.com/JimmyLaurent/hcaptcha-solver.git"
+    "url": "git://github.com/hitthemoney/hcaptcha-solver.git"
   },
   "main": "index.js",
   "license": "MIT",
@@ -23,7 +24,6 @@
     "tabWidth": 2
   },
   "dependencies": {
-    "request": "^2.88.2",
-    "request-promise-native": "^1.0.8"
+    "node-fetch": "^2.6.1"
   }
 }
