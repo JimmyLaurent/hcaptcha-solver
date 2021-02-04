@@ -1,6 +1,6 @@
 {
-  "name": "hcaptcha-solver-plus",
-  "version": "1.0.0",
+  "name": "@hitthemoney/hcaptcha-solver",
+  "version": "1.0.1",
   "description": "A library to solve hCaptcha challenges",
   "author": "hitthemoney",
   "original-author": "Jimmy Laurent",
@@ -15,15 +15,11 @@
     "bypass",
     "solve"
   ],
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "trailingComma": "none",
-    "parser": "flow",
-    "semi": true,
-    "tabWidth": 2
-  },
   "dependencies": {
     "node-fetch": "^2.6.1"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/hitthemoney/hcaptcha-solver/issues"
+  },
+  "homepage": "https://github.com/hitthemoney/hcaptcha-solver#readme"
 }

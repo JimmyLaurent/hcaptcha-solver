@@ -5,13 +5,13 @@ A library to solve hcaptcha challenges
 ## Install
 
 ```bash
-npm install hcaptcha-solver-plus
+npm install @hitthemoney/hcaptcha-solver
 ```
 
 ## Quick Example
 
 ```js
-const solveCaptcha = require("hcaptcha-solver-plus");
+const solveCaptcha = require("@hitthemoney/hcaptcha-solver");
 
 (async () => {
     try {
