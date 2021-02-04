@@ -1,0 +1,5 @@
+node_modules
+.vscode
+test.js
+package-lock.json
+**/*.DS_Store
