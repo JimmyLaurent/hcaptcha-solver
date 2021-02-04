@@ -124,7 +124,7 @@ async function tryToSolve(sitekey, host) {
  * @param {{
  *  timeout: number,
  *  maxAttempts: number,
- *  sitekey: string,
+ *  siteKey: string,
  *  retryDelay: number,
  * }} options Extra Options
  * @returns {Promise<string>} hCaptcha challange result

@@ -16,7 +16,7 @@ const solveCaptcha = require("@hitthemoney/hcaptcha-solver");
 (async () => {
     try {
         const response = await solveCaptcha("https://captcha-protected-site.com", {
-            sitekey: "site-key"
+            siteKey: "site-key"
         });
         console.log(response);
         // F0_eyJ0eXAiOiJKV1Q...

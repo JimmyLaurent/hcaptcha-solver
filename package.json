@@ -1,6 +1,6 @@
 {
   "name": "@hitthemoney/hcaptcha-solver",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "A library to solve hCaptcha challenges",
   "author": "hitthemoney",
   "original-author": "Jimmy Laurent",
