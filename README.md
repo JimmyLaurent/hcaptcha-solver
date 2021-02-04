@@ -5,7 +5,7 @@ A library to solve hcaptcha challenges
 ## Install
 
 ```bash
-npm install hcaptcha-solver
+npm install hcaptcha-solver-plus
 ```
 
 ## Quick Example
