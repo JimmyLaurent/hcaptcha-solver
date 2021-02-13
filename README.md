@@ -1,4 +1,4 @@
-# hcaptcha-solver-plus
+# hcaptcha-solver
 
 A library to solve hcaptcha challenges
 
