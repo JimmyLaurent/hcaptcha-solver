@@ -21,7 +21,7 @@ function getMouseMovements(timestamp) {
 }
 
 async function hsl(req) {
-  const hsl = await request.get('https://assets.hcaptcha.com/c/500c658/hsl.js');
+  const hsl = await request.get('https://assets.hcaptcha.com/c/523a6ff/hsl.js');
   return new Promise((resolve, reject) => {
     const code = `
     var self = {};
@@ -70,7 +70,8 @@ async function tryToSolve(sitekey, host) {
         st: timestamp,
         dct: timestamp,
         mm: getMouseMovements(timestamp)
-      }
+      },
+      v: '523a6ff',
     }
   });
 
