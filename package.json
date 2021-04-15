@@ -23,7 +23,6 @@
     "tabWidth": 2
   },
   "dependencies": {
-    "@google-cloud/vision": "^2.3.1",
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9"
   }

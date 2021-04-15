@@ -7,9 +7,7 @@ const { rdn, getMouseMovements } = require("./src/utils");
 const vision = require("@google-cloud/vision");
 
 // Setup Google Vision Client
-const client = new vision.ImageAnnotatorClient({
-  keyFilename: "./vision-api-key.json",
-});
+let client;
 
 // puppeteer.use(pluginStealth());
 
@@ -198,8 +196,10 @@ async function tryToSolve(userAgent, sitekey, host) {
   }
 }
 
-async function solveCaptcha(siteKey, host) {
+async function solveCaptcha(siteKey, host, visionClient) {
   try {
+    // Set client passed in to Google Client
+    client = await visionClient;
     while (true) {
       // Get random index for random user agent
       const randomIndex = Math.round(Math.random() * ((userAgents.length - 1) - 0) + 0)
