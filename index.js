@@ -1,13 +1,15 @@
 // const puppeteer = require("puppeteer-extra");
 // const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
-const userAgents = JSON.parse(require('fs').readFileSync('./src/useragents.json'));
+const userAgents = JSON.parse(require('fs').readFileSync('./useragents.json', 'utf8'));
 const vm = require('vm');
 const { rdn, getMouseMovements } = require("./src/random_utils");
-require("@google-cloud/vision");
+const vision = require("@google-cloud/vision");
 
 // Setup Google Vision Client
-let client;
+const client = new vision.ImageAnnotatorClient({
+  keyFilename: "./subaba-vision.json",
+});
 
 // puppeteer.use(pluginStealth());
 
@@ -287,6 +289,5 @@ async function solveCaptcha(siteKey, host) {
 //   // Solve Captcha
 //   return await solveCaptcha(captchaData[0], captchaData[1]);
 // }
-
 
 module.exports = solveCaptcha;
