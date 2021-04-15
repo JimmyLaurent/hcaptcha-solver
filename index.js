@@ -1,14 +1,15 @@
+require('module-alias/register')
 // const puppeteer = require("puppeteer-extra");
 // const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
-const userAgents = JSON.parse(require('fs').readFileSync('./useragents.json', 'utf8'));
+const userAgents = JSON.parse(require('fs').readFileSync('@src/useragents.json', 'utf8'));
 const vm = require('vm');
-const { rdn, getMouseMovements } = require("./src/random_utils");
+const { rdn, getMouseMovements } = require("@src/utils");
 const vision = require("@google-cloud/vision");
 
 // Setup Google Vision Client
 const client = new vision.ImageAnnotatorClient({
-  keyFilename: "./subaba-vision.json",
+  keyFilename: "@src/subaba-vision.json",
 });
 
 // puppeteer.use(pluginStealth());
