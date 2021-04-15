@@ -29,6 +29,6 @@
     "request-promise-native": "^1.0.9"
   },
   "_moduleAliases": {
-    "@src": "src"
+    "@src": "app/src"
   }
 }
