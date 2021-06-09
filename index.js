@@ -3,8 +3,7 @@
 const request = require("request-promise-native");
 const userAgents = JSON.parse(require('fs').readFileSync('./useragents.json', 'utf8'));
 const vm = require('vm');
-const { rdn, getMouseMovements } = require("./src/utils");
-const vision = require("@google-cloud/vision");
+const { rdn, getMouseMovements, removeInvalidUserAgent } = require("./src/utils");
 
 // Setup Google Vision Client
 let client;
@@ -75,13 +74,14 @@ async function tryToSolve(userAgent, sitekey, host) {
     let timestamp = Date.now() + rdn(30, 120);
     
     // Setup form for getting tasks list 
-    if (response.c === undefined) {
+    if (response.c === undefined) { 
       form = {
         sitekey,
         host,
         hl: 'en',
         motionData: {
           st: timestamp,
+          dct: timestamp,
           mm: getMouseMovements(timestamp)
         },
       }
@@ -92,6 +92,7 @@ async function tryToSolve(userAgent, sitekey, host) {
         hl: 'en',
         motionData: {
           st: timestamp,
+          dct: timestamp,
           mm: getMouseMovements(timestamp)
         },
         n: await getHSL(response.c.req),
@@ -100,16 +101,23 @@ async function tryToSolve(userAgent, sitekey, host) {
     }
 
     // Get tasks
-    let getTasks = await request({
+    const getTasks = await request({
       method: "post",
       headers,
       json: true,
-      url: `https://hcaptcha.com/getcaptcha`,
+      url: 'https://hcaptcha.com/getcaptcha',
       form: form
     });
 
+    console.log('!!!!!getTasks!!!!', getTasks);
+
     if (getTasks.generated_pass_UUID) {
       return getTasks.generated_pass_UUID;
+    }
+
+    if (!getTasks.requester_question) {
+      removeInvalidUserAgent(userAgent);
+      return null;
     }
 
     // Find what the captcha is looking for user's to click
@@ -121,6 +129,7 @@ async function tryToSolve(userAgent, sitekey, host) {
       request_image = requestImageArray[requestImageArray.length - 1];
     }
 
+    // Check if is an invisible captcha
     const key = getTasks.key;
     if (key.charAt(2) === "_") {
       return key;
