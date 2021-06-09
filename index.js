@@ -48,7 +48,7 @@ async function getAnswers(request_image, tasks) {
   return answers;
 }
 
-async function tryToSolve(userAgent, sitekey, host) {
+async function tryToSolve(userAgent, sitekey, host, proxy) {
   try {
     // Create headers
     let headers = {
@@ -68,6 +68,7 @@ async function tryToSolve(userAgent, sitekey, host) {
       method: 'get',
       headers,
       json: true,
+      proxy,
       url: `https://hcaptcha.com/checksiteconfig?host=${host}&sitekey=${sitekey}&sc=1&swa=1`
     });
 
@@ -147,6 +148,7 @@ async function tryToSolve(userAgent, sitekey, host) {
       method: 'get',
       headers,
       json: true,
+      proxy,
       url: `https://hcaptcha.com/checksiteconfig?host=${host}&sitekey=${sitekey}&sc=1&swa=1`
     });
 
@@ -199,6 +201,7 @@ async function tryToSolve(userAgent, sitekey, host) {
       method: "post",
       headers,
       json: true,
+      proxy,
       body: captchaResponse,
     });
 
@@ -211,16 +214,17 @@ async function tryToSolve(userAgent, sitekey, host) {
   };
 }
 
-async function solveCaptcha(siteKey, host, visionClient) {
+async function solveCaptcha(siteKey, host, visionClient, proxies) {
   try {
     // Set client passed in to Google Client
     client = await visionClient;
     while (true) {
       // Get random index for random user agent
       const randomIndex = Math.round(Math.random() * ((userAgents.length - 1) - 0) + 0)
+      const proxy = proxies[Math.floor(Math.random() * proxies.length)];
 
       // Attempt to solve hCaptcha
-      const result = await tryToSolve(userAgents[randomIndex].useragent, siteKey, host);
+      const result = await tryToSolve(userAgents[randomIndex].useragent, siteKey, host, proxy);
       if (result && result !== null) {
         return result;
       }

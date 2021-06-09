@@ -27,3 +27,4 @@ const solveCaptcha = require('hcaptcha-solver');
 ## Credits
 
 - Thanks to [Futei](https://github.com/Futei/SineCaptcha)
+
