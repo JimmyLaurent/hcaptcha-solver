@@ -1,9 +1,9 @@
 // const puppeteer = require("puppeteer-extra");
 // const pluginStealth = require("puppeteer-extra-plugin-stealth");
 const request = require("request-promise-native");
-const userAgents = JSON.parse(require('fs').readFileSync('./useragents.json', 'utf8'));
 const vm = require('vm');
-const { rdn, getMouseMovements, removeInvalidUserAgent } = require("./src/utils");
+const { rdn, getMouseMovements } = require("./src/utils");
+const { getUserAgent, increaseUserAgentCounter } = require("./src/utils-user-agent");
 
 // Setup Google Vision Client
 let client;
@@ -31,13 +31,14 @@ async function getHSL(req) {
   });
 }
 
-async function getAnswers(request_image, tasks) {
+async function getAnswers(requestImage, tasks) {
   let answers = new Map();
 
   await Promise.all(tasks.map(async (task) => {
     await client.objectLocalization(task.datapoint_uri).then((res) => {
-      let [data] = res;
-      if (data.localizedObjectAnnotations.find((i) => i.name.toUpperCase() === request_image.toUpperCase() && i.score > 0.5)) {
+      const [data] = res;
+      // console.log('!!DATA!!', data.localizedObjectAnnotations);
+      if (data.localizedObjectAnnotations.find(i => i.name.toLowerCase() === requestImage.toLowerCase() && i.score > 0.5)) {
         answers[task.task_key] = "true";
       } else {
         answers[task.task_key] = "false";
@@ -48,7 +49,7 @@ async function getAnswers(request_image, tasks) {
   return answers;
 }
 
-async function tryToSolve(userAgent, sitekey, host, proxy) {
+async function tryToSolve(userAgent, sitekey, host, proxy, UserAgent) {
   try {
     // Create headers
     let headers = {
@@ -60,7 +61,7 @@ async function tryToSolve(userAgent, sitekey, host, proxy) {
       "Sec-Fetch-Site": "same-site",
       "Sec-Fetch-Mode": "cors",
       "Sec-Fetch-Dest": "empty",
-      "User-Agent": userAgent
+      "User-Agent": userAgent.useragent
     };
     
     // Check site config
@@ -82,7 +83,6 @@ async function tryToSolve(userAgent, sitekey, host, proxy) {
         hl: 'en',
         motionData: {
           st: timestamp,
-          dct: timestamp,
           mm: getMouseMovements(timestamp)
         },
       }
@@ -93,7 +93,6 @@ async function tryToSolve(userAgent, sitekey, host, proxy) {
         hl: 'en',
         motionData: {
           st: timestamp,
-          dct: timestamp,
           mm: getMouseMovements(timestamp)
         },
         n: await getHSL(response.c.req),
@@ -110,25 +109,31 @@ async function tryToSolve(userAgent, sitekey, host, proxy) {
       form: form
     });
 
-    console.log('!!!!!getTasks!!!!', getTasks);
-
     if (getTasks.generated_pass_UUID) {
       return getTasks.generated_pass_UUID;
     }
 
     if (!getTasks.requester_question) {
-      removeInvalidUserAgent(userAgent);
+      await increaseUserAgentCounter(userAgent._id, UserAgent);
+      console.log(`user agent ${userAgent._id} updated`);
       return null;
     }
 
-    // Find what the captcha is looking for user's to click
-    const requestImageArray = getTasks.requester_question.en.split(" ");
-    let request_image = requestImageArray[requestImageArray.length - 1];
-    if (request_image === "motorbus") {
-      request_image = "bus"
-    } else {
-      request_image = requestImageArray[requestImageArray.length - 1];
+    const requestImageMap = {
+      'сar': 'car',            // the first letter "c" is different (code &#x441;)
+      'mοtorbus': 'bus',       // the first letter "o" in "motorbus" is not o (code &omicron;)
+      'аirplane': 'airplane',  // the first letter "a" is different (code &#x430;)
+      'trаin': 'train',        // the letter "a" is different (code &#x430;)
+      'truсk': 'truck',        // the letter "c" is different (code &#x441;)
+      'mοtorcycle': 'motorcycle', // the first letter "o" is not o (code &omicron;)
+      'bοat': 'boat',          // the first letter "o" is not o (code &omicron;)
+      'bіcycle': 'bicycle'     // the letter "i" is different (code &#x456;)
     }
+
+    // Find what the captcha is looking for user's to click
+    // console.log(getTasks.requester_question.en);
+    const requestImageArray = getTasks.requester_question.en.split(" ");
+    const requestImage = requestImageMap[requestImageArray[requestImageArray.length - 1]] || requestImageArray[requestImageArray.length - 1];
 
     // Check if is an invisible captcha
     const key = getTasks.key;
@@ -141,7 +146,8 @@ async function tryToSolve(userAgent, sitekey, host, proxy) {
     timestamp = Date.now() + rdn(30, 120);
 
     // Get Answers
-    const answers = await getAnswers(request_image, tasks);
+    const answers = await getAnswers(requestImage, tasks);
+    console.log('!!!answers!!!', answers);
 
     // Renew response
     response = await request({
@@ -193,7 +199,7 @@ async function tryToSolve(userAgent, sitekey, host, proxy) {
       "Sec-Fetch-Site": "same-site",
       "Sec-Fetch-Mode": "cors",
       "Sec-Fetch-Dest": "empty",
-      "User-Agent": userAgent,
+      "User-Agent": userAgent.useragent
     };
 
     // Check answers
@@ -201,7 +207,6 @@ async function tryToSolve(userAgent, sitekey, host, proxy) {
       method: "post",
       headers,
       json: true,
-      proxy,
       body: captchaResponse,
     });
 
@@ -214,17 +219,17 @@ async function tryToSolve(userAgent, sitekey, host, proxy) {
   };
 }
 
-async function solveCaptcha(siteKey, host, visionClient, proxies) {
+async function solveCaptcha(siteKey, host, visionClient, proxies, UserAgent) {
   try {
     // Set client passed in to Google Client
     client = await visionClient;
     while (true) {
       // Get random index for random user agent
-      const randomIndex = Math.round(Math.random() * ((userAgents.length - 1) - 0) + 0)
+      const userAgent = await getUserAgent(UserAgent);
       const proxy = proxies[Math.floor(Math.random() * proxies.length)];
 
       // Attempt to solve hCaptcha
-      const result = await tryToSolve(userAgents[randomIndex].useragent, siteKey, host, proxy);
+      const result = await tryToSolve(userAgent, siteKey, host, proxy, UserAgent);
       if (result && result !== null) {
         return result;
       }

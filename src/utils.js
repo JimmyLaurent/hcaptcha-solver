@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 // Randomize function
 function rdn(start, end) {
   return Math.round(Math.random() * (end - start) + start);
@@ -17,15 +15,4 @@ function getMouseMovements(timestamp) {
   return mouseMovements;
 }
 
-function removeInvalidUserAgent(userAgent) {
-  const userAgents = JSON.parse(fs.readFileSync('./useragents.json', 'utf8'));
-  const newUserAgents = userAgents.filter( el => el.useragent !== userAgent );
-
-  fs.writeFileSync('./useragents.json', JSON.stringify(newUserAgents, null, 2), function writeJSON(err) {
-    if (err) {
-      return console.log(err);
-    };
-  });
-}
-
-module.exports = { rdn, getMouseMovements, removeInvalidUserAgent };
+module.exports = { rdn, getMouseMovements };
